@@ -83,6 +83,7 @@ func printPacketInfo(packet gopacket.Packet) {
     udpLayer := packet.Layer(layers.LayerTypeUDP)
     if udpLayer != nil {
         udp, _ := udpLayer.(*layers.UDP)
+        fmt.Println("Protocol: UDP")
         fmt.Sscanf(udp.SrcPort.String(),"%d(%s",&sport,&str)
         fmt.Sscanf(udp.DstPort.String(),"%d(%s",&dport,&str)
         fmt.Printf("UDP Src port %s\n", strconv.Itoa(sport))
@@ -98,7 +99,7 @@ func printPacketInfo(packet gopacket.Packet) {
     greLayer := packet.Layer(layers.LayerTypeGRE)
     if greLayer != nil {
         isGre = 1
-        fmt.Println("Protocol: GRE")
+        fmt.Println("Next Layer Protocol: GRE")
         fmt.Println("%d",isGre)
     }
     if len(byte) >= 46 {
@@ -107,7 +108,7 @@ func printPacketInfo(packet gopacket.Packet) {
         //fmt.Println(byte[45])
         if byte[44] == 101 && byte[45] == 88 {
             isGre = 1
-            fmt.Println("Protocol: GRE")
+            fmt.Println("Next Layer Protocol: GRE")
         }
     }
     if isGre == 1 && src!="140.113.0.1"{
