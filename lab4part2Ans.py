@@ -75,24 +75,22 @@ def config(r1, r2, r3, GW, h1, h2, h3):
     GW.cmd('route add -net 140.115.0.0/16 gw 140.113.0.2')
     
     GW.cmd('ip link add br0 type bridge')
-    GW.cmd('ip link set GW-eth1 master br0')
+    GW.cmd('brctl addif br0 GW-eth1')
     GW.cmd('ip link set br0 up')
 
-    r1.cmd('ip link add vx type gretap remote 140.113.0.1 local 140.114.0.1 \
-    encap fou encap-sport 12345 encap-dport 12346')
-    r1.cmd('ip link set vx up')
+    r1.cmd('ip link add GRE type gretap remote 140.113.0.1 local 140.114.0.1')
+    r1.cmd('ip link set GRE up')
     r1.cmd('ip link add br0 type bridge')
-    r1.cmd('ip link set r1-eth0 master br0')
-    r1.cmd('ip link set vx master br0')
+    r1.cmd('brctl addif br0 r1-eth0')
+    r1.cmd('brctl addif br0 GRE')
     r1.cmd('ip link set br0 up')
     r1.cmd('ip fou add port 12345 ipproto 47')
 
-    r2.cmd('ip link add vx type gretap remote 140.113.0.1 local 140.115.0.1 \
-    encap fou encap-sport 22222 encap-dport 22223')
-    r2.cmd('ip link set vx up')
+    r2.cmd('ip link add GRE type gretap remote 140.113.0.1 local 140.115.0.1')
+    r2.cmd('ip link set GRE up')
     r2.cmd('ip link add br0 type bridge')
-    r2.cmd('ip link set r2-eth0 master br0');
-    r2.cmd('ip link set vx master br0');
+    r2.cmd('brctl addif br0 r2-eth0')
+    r2.cmd('brctl addif br0 GRE')
     r2.cmd('ip link set br0 up');
     r2.cmd('ip fou add port 22222 ipproto 47')
 
