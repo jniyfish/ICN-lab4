@@ -18,14 +18,14 @@ class Router(Node):
         super(Router, self).terminate()
 
 def topology():
-    net = Mininet(autoStaticArp=True)
+    net = Mininet(autoStaticArp=False)
 
     # Initialize objects dicts
     hosts, switches, routers = {}, {}, {}
 
     # Create Host, from h1 to h4
-    h1 = net.addHost('h1',ip='140.113.20.1/24')
-    h2 = net.addHost('h2',ip='140.114.20.1/24')
+    h1 = net.addHost('h1',ip='10.0.0.1/8')
+    RG = net.addHost('RG',ip='10.0.0.2/8')
     # Create Switch s1
     for i in range(2):
         switch = net.addSwitch('s%d' % (i + 1), failMode='standalone')
@@ -34,12 +34,12 @@ def topology():
     # Create Router, from r1 to r6
     r1 = net.addHost('r1', cls=Router)
     r2 = net.addHost('r2', cls=Router)
-    GW1 = net.addHost('GW1', cls=Router)
-    GW2 = net.addHost('GW2', cls=Router)
+    BRG1 = net.addHost('BRG1', cls=Router)
+    BRGr = net.addHost('BRGr', cls=Router)
     # link pairs
-    links = [('h1', 's1'), ('h2', 's2'),
-             ('GW1', 's1'), ('GW1', 'r1'),
-             ('GW2', 's2'), ('GW2', 'r2'),
+    links = [('h1', 's1'), ('RG', 's2'),
+             ('BRG1', 's1'), ('BRG1', 'r1'),
+             ('BRGr', 's2'), ('BRGr', 'r2'),
              ('r1', 'r2')
             ]
     #create link
@@ -50,13 +50,13 @@ def topology():
     net.start()
 
     # Configure network manually
-    config(r1, r2, GW1, GW2, h1, h2)
+    config(r1, r2, BRG1, BRGr, h1, RG)
 
     CLI(net)
 
     net.stop()
 
-def config(r1, r2, GW1, GW2, h1, h2):
+def config(r1, r2, BRG1, BRGr, h1, RG):
 
     # Hosts, Routers IP configuration
     r1.cmd('ifconfig r1-eth0 140.113.0.2/16')
@@ -65,15 +65,12 @@ def config(r1, r2, GW1, GW2, h1, h2):
     r2.cmd('ifconfig r2-eth0 140.114.0.2/16')
     r2.cmd('ifconfig r2-eth1 20.0.0.2/8')
 
-    #GW1.cmd('ifconfig GW1-eth0 140.113.20.15/24')
-    GW1.cmd('ifconfig GW1-eth1 140.113.0.1/16')
+    BRG1.cmd('ifconfig BRG1-eth1 140.113.0.1/16')
 
-    #GW2.cmd('ifconfig GW2-eth0 140.114.20.15/24')
-    GW2.cmd('ifconfig GW2-eth1 140.114.0.1/16')
+    BRGr.cmd('ifconfig BRGr-eth1 140.114.0.1/16')
 
     # Host routing table configuration
-    h1.cmd('ip route add default dev h1-eth0')
-    h2.cmd('ip route add default dev h2-eth0')
+    h1.cmd('ip route add default via 10.0.0.2 dev h1-eth0')
 
     # Router routing table configuration
     r1.cmd('route add -net 140.113.0.0/16 gw 140.113.0.1')
@@ -82,27 +79,25 @@ def config(r1, r2, GW1, GW2, h1, h2):
     r2.cmd('route add -net 140.114.0.0/16 gw 140.114.0.1')
     r2.cmd('route add -net 140.113.0.0/16 gw 20.0.0.1')
 
-    GW1.cmd('ip route add 140.114.0.0/16 via 140.113.0.2')
-    GW2.cmd('ip route add 140.113.0.0/16 via 140.114.0.2')
+    BRG1.cmd('ip route add 140.114.0.0/16 via 140.113.0.2')
+    BRGr.cmd('ip route add 140.113.0.0/16 via 140.114.0.2')
 
-    GW1.cmd('ip link add GRE type gretap remote 140.114.0.1 local 140.113.0.1')
-    GW1.cmd('ip link set GRE up')
-    GW1.cmd('ip link add br0 type bridge')
-    GW1.cmd('brctl addif br0 GW1-eth0')
-    GW1.cmd('brctl addif br0 GRE')
-    GW1.cmd('ip link set br0 up')
+    BRG1.cmd('ip link add GRE type gretap remote 140.114.0.1 local 140.113.0.1')
+    BRG1.cmd('ip link set GRE up')
+    BRG1.cmd('ip link add br0 type bridge')
+    BRG1.cmd('brctl addif br0 BRG1-eth0')
+    BRG1.cmd('brctl addif br0 GRE')
+    BRG1.cmd('ip link set br0 up')
 
-    GW2.cmd('ip link add GRE type gretap remote 140.113.0.1 local 140.114.0.1')
-    GW2.cmd('ip link set GRE up')
-    GW2.cmd('ip link add br0 type bridge')
-    GW2.cmd('brctl addif br0 GW2-eth0')
-    GW2.cmd('brctl addif br0 GRE')
-    GW2.cmd('ip link set br0 up')
+    BRGr.cmd('ip link add GRE type gretap remote 140.113.0.1 local 140.114.0.1')
+    BRGr.cmd('ip link set GRE up')
+    BRGr.cmd('ip link add br0 type bridge')
+    BRGr.cmd('brctl addif br0 BRGr-eth0')
+    BRGr.cmd('brctl addif br0 GRE')
+    BRGr.cmd('ip link set br0 up')
     
 
 
 
 if __name__ == '__main__':
     topology()
-
-
