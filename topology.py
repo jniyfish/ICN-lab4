@@ -105,16 +105,16 @@ def config(r1, r2, BRG1, BRG2, BRGr, h1, h2, GWr):
     BRG2.cmd('brctl addif br0 GRE')
     BRG2.cmd('ip link set br0 up')
 
-    #BRGr.cmd('ip link add GRE type gretap remote 140.114.0.1 local 140.113.0.1')
-    #BRGr.cmd('ip link set GRE up')
-    #BRGr.cmd('ip link add GRE2 type gretap remote 140.115.0.1 local 140.113.0.1')
-    #BRGr.cmd('ip link set GRE2 up')
+    BRGr.cmd('ip link add GRE type gretap remote 140.114.0.1 local 140.113.0.1')
+    BRGr.cmd('ip link set GRE up')
+    BRGr.cmd('ip link add GRE2 type gretap remote 140.115.0.1 local 140.113.0.1')
+    BRGr.cmd('ip link set GRE2 up')
     BRGr.cmd('ip link add br0 type bridge')
     BRGr.cmd('brctl addif br0 BRGr-eth0')
     BRGr.cmd('ip link set br0 up')
-    #BRGr.cmd('brctl addif br0 GRE')
-    #BRGr.cmd('brctl addif br0 GRE2')
-    #BRGr.cmd('ip link set br0 up')
+    BRGr.cmd('brctl addif br0 GRE')
+    BRGr.cmd('brctl addif br0 GRE2')
+    BRGr.cmd('ip link set br0 up')
     
 
 

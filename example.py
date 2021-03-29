@@ -25,11 +25,8 @@ def topology():
 
     # Create Host, from h1 to h4
     h1 = net.addHost('h1',ip='10.0.0.1/8')
-    RG = net.addHost('RG',ip='10.0.0.2/8')
-    # Create Switch s1
-    for i in range(2):
-        switch = net.addSwitch('s%d' % (i + 1), failMode='standalone')
-        switches['s%d' % (i + 1)] = switch
+    GWr = net.addHost('GWr',ip='10.0.0.2/8')
+
 
     # Create Router, from r1 to r6
     r1 = net.addHost('r1', cls=Router)
@@ -37,9 +34,9 @@ def topology():
     BRG1 = net.addHost('BRG1', cls=Router)
     BRGr = net.addHost('BRGr', cls=Router)
     # link pairs
-    links = [('h1', 's1'), ('RG', 's2'),
-             ('BRG1', 's1'), ('BRG1', 'r1'),
-             ('BRGr', 's2'), ('BRGr', 'r2'),
+    links = [('h1', 'BRG1'), ('GWr', 'BRGr'),
+             ('BRG1', 'r1'),
+             ('BRGr', 'r2'),
              ('r1', 'r2')
             ]
     #create link
@@ -50,13 +47,13 @@ def topology():
     net.start()
 
     # Configure network manually
-    config(r1, r2, BRG1, BRGr, h1, RG)
+    config(r1, r2, BRG1, BRGr, h1, GWr)
 
     CLI(net)
 
     net.stop()
 
-def config(r1, r2, BRG1, BRGr, h1, RG):
+def config(r1, r2, BRG1, BRGr, h1, GWr):
 
     # Hosts, Routers IP configuration
     r1.cmd('ifconfig r1-eth0 140.113.0.2/16')
