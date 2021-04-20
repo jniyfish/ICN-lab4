@@ -41,12 +41,12 @@ def topology():
     r3 = net.addHost('r3', cls=Router)
     r4 = net.addHost('r4', cls=Router)
     r5 = net.addHost('r5', cls=Router)
-    GW = net.addHost('GW', cls=Router)
+    BRGr = net.addHost('BRGr', cls=Router)
     # link pairs
     links = [('h1', 'r1'), ('h2', 'r2'),('h3', 'r3'), ('h4', 'r4'),
              ('h5', 's1'), ('h6', 's1'),
              ('r1', 'r5'), ('r2', 'r5'),('r3', 'r5'), ('r4', 'r5'),
-             ('GW', 'r5'), ('GW', 's1')
+             ('BRGr', 's1'), ('BRGr', 'r5')
             ]
     #create link
     for link in links:
@@ -56,12 +56,12 @@ def topology():
     net.start()
 
     # Configure network manually
-    config(r1, r2, r3, r4, r5, GW, h1, h2, h3, h4, h5, h6)
+    config(r1, r2, r3, r4, r5, BRGr, h1, h2, h3, h4, h5, h6)
     CLI(net)
     pingall(h1, h2, h3, h4)
     net.stop()
 
-def config(r1, r2, r3, r4, r5, GW, h1, h2, h3, h4, h5, h6):
+def config(r1, r2, r3, r4, r5, BRGr, h1, h2, h3, h4, h5, h6):
 
     r1.cmd('ifconfig r1-eth0 10.0.0.5/8')
     r1.cmd('ifconfig r1-eth1 140.114.0.1/16')
@@ -81,8 +81,8 @@ def config(r1, r2, r3, r4, r5, GW, h1, h2, h3, h4, h5, h6):
     r5.cmd('ifconfig r5-eth3 140.117.0.2/16')
     r5.cmd('ifconfig r5-eth4 140.113.0.2/16')
 
-    GW.cmd('ifconfig GW-eth0 140.113.0.1/16')
-    GW.cmd('ifconfig GW-eth1 10.0.0.100/8')
+    BRGr.cmd('ifconfig BRGr-eth1 140.113.0.1/16')
+    BRGr.cmd('ifconfig BRGr-eth0 10.0.0.100/8')
 
     h1.cmd('route add default gw 10.0.0.5')
     h2.cmd('route add default gw 10.0.0.6')
@@ -97,27 +97,27 @@ def config(r1, r2, r3, r4, r5, GW, h1, h2, h3, h4, h5, h6):
     r3.cmd('route add -net 140.113.0.0/16 gw 140.116.0.2')
     r4.cmd('route add -net 140.113.0.0/16 gw 140.117.0.2')
 
-    GW.cmd('route add -net 140.114.0.0/16 gw 140.113.0.2')
-    GW.cmd('route add -net 140.115.0.0/16 gw 140.113.0.2')
-    GW.cmd('route add -net 140.116.0.0/16 gw 140.113.0.2')
-    GW.cmd('route add -net 140.117.0.0/16 gw 140.113.0.2')
+    BRGr.cmd('route add -net 140.114.0.0/16 gw 140.113.0.2')
+    BRGr.cmd('route add -net 140.115.0.0/16 gw 140.113.0.2')
+    BRGr.cmd('route add -net 140.116.0.0/16 gw 140.113.0.2')
+    BRGr.cmd('route add -net 140.117.0.0/16 gw 140.113.0.2')
     
-    #static gre on node GW
-    #GW.cmd('ip link add br0 type bridge')
-    #GW.cmd('ip link set GW-eth1 master br0');
-    #GW.cmd('ip link set br0 up');
-    #GW.cmd('ip link add gre1 type gretap remote 140.114.0.1 local 140.113.0.1 ')
-    #GW.cmd('ip link set gre1 up')
-    #GW.cmd('ip link set gre1 master br0');
-    #GW.cmd('ip link add gre2 type gretap remote 140.115.0.1 local 140.113.0.1 ')
-    #GW.cmd('ip link set gre2 up')
-    #GW.cmd('ip link set gre2 master br0');
-    #GW.cmd('ip link add gre3 type gretap remote 140.116.0.1 local 140.113.0.1 ')
-    #GW.cmd('ip link set gre3 up')
-    #GW.cmd('ip link set gre3 master br0');
-    #GW.cmd('ip link add gre4 type gretap remote 140.117.0.1 local 140.113.0.1 ')
-    #GW.cmd('ip link set gre4 up')
-    #GW.cmd('ip link set gre4 master br0');
+    #static gre on node BRGr
+    BRGr.cmd('ip link add br0 type bridge')
+    BRGr.cmd('ip link set BRGr-eth0 master br0');
+    BRGr.cmd('ip link set br0 up');
+    BRGr.cmd('ip link add gre1 type gretap remote 140.114.0.1 local 140.113.0.1 ')
+    BRGr.cmd('ip link set gre1 up')
+    BRGr.cmd('ip link set gre1 master br0');
+    BRGr.cmd('ip link add gre2 type gretap remote 140.115.0.1 local 140.113.0.1 ')
+    BRGr.cmd('ip link set gre2 up')
+    BRGr.cmd('ip link set gre2 master br0');
+    BRGr.cmd('ip link add gre3 type gretap remote 140.116.0.1 local 140.113.0.1 ')
+    BRGr.cmd('ip link set gre3 up')
+    BRGr.cmd('ip link set gre3 master br0');
+    BRGr.cmd('ip link add gre4 type gretap remote 140.117.0.1 local 140.113.0.1 ')
+    BRGr.cmd('ip link set gre4 up')
+    BRGr.cmd('ip link set gre4 master br0');
 
     r1.cmd('ip link add vx type gretap remote 140.113.0.1 local 140.114.0.1 ')
     r1.cmd('ip link set vx up')
